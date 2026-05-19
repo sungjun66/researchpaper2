@@ -108,11 +108,13 @@
     <div class="container is-max-desktop">
       <div class="columns is-centered">
         <div class="column has-text-centered">
-          <h1 class="title is-1 publication-title">PiLS of Embedded Hybrid MPC for Fighter Aircraft Attack Angle Control Using QP-based Approximation of MINLP</h1>
+          <h1 class="title is-1 publication-title">Koopman Kalman Filter for Vehicle Sideslip Estimation</h1>
           
           <div class="is-size-5 publication-authors">
             <span class="author-block">
               Sungjun Park<sup>1</sup>,</span>
+            <span class="author-block">
+              Dohee Kim<sup>3</sup>,</span>
             <span class="author-block">
               Kwangki Kim<sup>1,2,*</sup>,</span>
           </div>
@@ -120,21 +122,20 @@
           <div class="is-size-5 publication-authors">
             <span class="author-block"><sup>1</sup>Department of Electrical and Computer Engineering, Inha University, Republic of Korea</span>
             <span class="author-block"><sup>2</sup>Department of Electrical and Electronic Engineering, Inha University, Republic of Korea</span>
+            <span class="author-block"><sup>3</sup>Hyundai Motor Group, Republic of Korea</span>
           </div>
 
           <div class="column has-text-centered">
             <div class="publication-links">
               <span class="link-block">
-                <a href="https://www.dbpia.co.kr/pdf/pdfView.do?nodeId=NODE12540919&width=2560"
-                   class="external-link button is-normal is-rounded is-dark">
+                <span class="button is-normal is-rounded is-dark is-static">
                   <span class="icon">
-                      <i class="fas fa-file-pdf"></i>
+                    <i class="fas fa-file-pdf"></i>
                   </span>
-                  <span>Paper</span>
-                </a>
+                  <span>Paper (Coming Soon)</span>
+                </span>
               </span>
             </div>
-
           </div>
         </div>
       </div>
@@ -225,19 +226,18 @@
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
           <p>
-            The control of an aircraft’s attack angle is critical for flight safety. This study presents a control framework
-            that accounts for nonlinear dynamics and discrete input constraints while remaining feasible for real-time implementation.
+            This paper proposes a Koopman Kalman filter (KKF) for real-time vehicle sideslip angle estimation under nonlinear vehicle dynamics.
           </p>
           <p>
-            Focusing on the F-8 Crusader aircraft, the original Mixed-Integer Nonlinear Programming (MINLP) problem is relaxed
-            into a continuous Quadratic Program (QP) and addressed using a Linear Parameter-Varying MPC (LPV-MPC) structure,
-            with discrete constraints approximated via Rule-Based Control (RBC). The framework is validated through Processorin-
-            the-Loop (PiL) simulation on a Teensy 4.1 microcontroller.
+            The standard Kalman filter is computationally efficient but limited in nonlinear driving conditions, whereas extended Kalman filters improve accuracy at the cost of repeated Jacobian linearization.
+            The proposed KKF uses extended dynamic mode decomposition to obtain a finite-dimensional Koopman linear representation of the nonlinear dynamics and measurement model, enabling linear Kalman filtering in a lifted state space.
+            The method is evaluated in double lane change, slalom, and racetrack scenarios against KF and EKF estimators.
+            Results show that the KKF achieves the lowest sideslip angle RMSE in all cases while significantly reducing computation time.
           </p>
           <p>
-            Both strategies stabilized the attack angle to 0 rad for
-            prediction horizons of 4 and 8 with a 0.05 s sampling time, and the LPV-MPC+RBC method met the 50 ms real-time
-            control requirement on the embedded platform.
+            In double lane change and slalom maneuvers, it reduces RMSE by 15.1% and 34.4% compared with the EKF, with approximately 94% lower computation time.
+            In the racetrack scenario, it improves RMSE by 36.9% over the KF and 21.5% over the EKF while operating about four times faster than the EKF.
+            These results demonstrate the effectiveness of the proposed KKF for accurate and efficient real-time vehicle state estimation.
           </p>
         </div>
       </div>
@@ -245,15 +245,7 @@
     <!--/ Abstract. -->
 
     <!-- Paper video. -->
-    <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
-        <h2 class="title is-3">Video</h2>
-        <div class="publication-video">
-          <iframe src="https://www.youtube.com/embed/T8FQygL_fh4?rel=0&showinfo=0"
-                  frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        </div>
-      </div>
-    </div>
+    
     <!--/ Paper video. -->
   </div>
 </section>
@@ -264,7 +256,7 @@
 
     <div class="columns is-centered">
       <div class="column is-full-width">
-        <h2 class="title is-3">Control Architecture</h2>
+        <h2 class="title is-3">Koopman Kalman Filter Framework</h2>
         <div class="content has-text-justified">
           <p>
             This figure illustrates the closed-loop control scheme where the LPV-MPC block iteratively performs linearization, discretization, and QP formulation to compute a relaxed continuous control input. 
@@ -282,9 +274,13 @@
         <hr> <h2 class="title is-3">Verification Environment</h2>
         <div class="content has-text-justified">
           <p>
-            This figure depicts the Processor-in-the-Loop Simulation (PiLS) verification environment, establishing real-time communication between the F-8 Crusader plant model in Simulink and the control algorithm deployed on a Teensy 4.1 microcontroller. 
-            The Simulink environment transmits the current state variables to the hardware, while the Teensy board executes the embedded LPV-MPC using the OSQP solver. 
-            The computed optimal control input is then sent back to the Simulink plant model to validate real-time feasibility and performance.
+            Schematic architecture of the proposed Koopman Kalman Filter (KKF) framework for vehicle state estimation.</strong> 
+            The framework is divided into two distinct operating stages: <strong>Phase I (Offline EDMD Learning)</strong> and <strong>Phase II (Online Koopman Kalman Filter)</strong>. 
+            In Phase I, time-series data snapshots ({X, X<sup>+</sup>, U, Z}) are gathered from a high-fidelity nonlinear vehicle model. 
+            These physical variables are mapped into a high-dimensional linear subspace using a Radial Basis Function (RBF) lifting mapping, &psi;(x) = [x<sup>T</sup>, RBF(x)<sup>T</sup>]<sup>T</sup>. 
+            Extended Dynamic Mode Decomposition (EDMD) is then executed by solving least-squares optimization problems under the Frobenius norm ||&bull;||<sub>F</sub> to identify the global linear matrices (A<sub>lift</sub>, B<sub>lift</sub>, C<sub>z</sub>, C<sub>x</sub>). 
+            In Phase II, the learned matrices are embedded into a linear-like Kalman filtering pipeline. Real-time sensor inputs are processed through standard <em>Predict</em> (Time update) and <em>Correct</em> (Measurement update) loops without requiring burdensome online Jacobian evaluations. 
+            Finally, the corrected lifted state &Phi;&#x302;<sub>k|k</sub> is mapped back to reconstruct the unmeasurable nonlinear physical states, yielding the estimated state vector x&#x302;<sub>k</sub> = [&beta;&#x302;, &gamma;&#x302;, &phi;&#x302;, &phi;&#x302;&#x307;]<sup>T</sup>.
           </p>
           <div class="has-text-centered">
             <img src="./static/images/PiLS.png" alt="Verification Environment" style="width: 80%; margin-top:10px;">
@@ -330,12 +326,12 @@
 <section class="section" id="BibTeX">
   <div class="container is-max-desktop content">
     <h2 class="title">BibTeX</h2>
-    <pre><code>@article{Park2025CRUSADER,
-  author    = {Sung-Jun Park, Ji-Won Kim and Kwangki Kim},
-  title     = {PiLS of Embedded Hybrid MPC for Fighter Aircraft Attack Angle Control Using QP-based Approximation of MINLP},
-  journal   = {International Conference on Control, Automation and Systems},
-  year      = {2025},
-  pages     = {1195 -- 1200}
+    <pre><code>@article{Park2025KKF,
+  author    = {Sung-Jun Park, Do-Hee Kim and Kwangki Kim},
+  title     = {Koopman Kalman Filter for Vehicle Sideslip Estimation},
+  journal   = {},
+  year      = {2026},
+  pages     = {}
 }</code></pre>
   </div>
 </section>
