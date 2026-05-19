@@ -254,24 +254,9 @@
 <section class="section">
   <div class="container is-max-desktop">
 
-    <div class="columns is-centered">
-      <div class="column is-full-width">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
         <h2 class="title is-3">Koopman Kalman Filter Framework</h2>
-        <div class="content has-text-justified">
-          <p>
-            This figure illustrates the closed-loop control scheme where the LPV-MPC block iteratively performs linearization, discretization, and QP formulation to compute a relaxed continuous control input. 
-            This intermediate value is processed by the Rule-Based Control (RBC) logic, which quantizes the signal into specific discrete values (±0.05236 rad) based on its sign. 
-            The resulting discrete input is then applied to the nonlinear F-8 aircraft model to update the system states for the next iteration.
-          </p>
-          <div class="has-text-centered">
-            <img src="./static/images/LPV_MPC_concept.png" alt="Control Architecture" style="width:80%; margin-top:10px;">
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="columns is-centered">
-      <div class="column is-full-width">
-        <hr> <h2 class="title is-3">Verification Environment</h2>
         <div class="content has-text-justified">
           <p>
             Schematic architecture of the proposed Koopman Kalman Filter (KKF) framework for vehicle state estimation.</strong> 
@@ -283,11 +268,165 @@
             Finally, the corrected lifted state &Phi;&#x302;<sub>k|k</sub> is mapped back to reconstruct the unmeasurable nonlinear physical states, yielding the estimated state vector x&#x302;<sub>k</sub> = [&beta;&#x302;, &gamma;&#x302;, &phi;&#x302;, &phi;&#x302;&#x307;]<sup>T</sup>.
           </p>
           <div class="has-text-centered">
-            <img src="./static/images/PiLS.png" alt="Verification Environment" style="width: 80%; margin-top:10px;">
+            <img src="./static/images/kkf1.png" alt="Control Architecture" style="width:80%; margin-top:10px;">
           </div>
         </div>
       </div>
     </div>
+    <div class="columns is-centered has-text-centered">
+  <div class="column is-four-fifths">
+    <hr> 
+    <h2 class="title is-3">Simulation Results</h2>
+    
+    <div class="content has-text-justified">
+      <p>
+        We designed the evaluation around extreme driving scenarios in which the road friction coefficient changes over time: double lane change, slalom, and a racetrack with a constant road friction coefficient. We compare the KKF against the KF and EKF.
+        The KKF was trained offline using a range of road friction coefficients, while for a fair comparison, the KF and EKF were given the known road friction coefficient as an input. All scenarios were validated through 300 Monte Carlo simulations.
+      </p>
+
+      <h3 class="title is-4 mt-6 has-text-centered">Simulation: Double Lane Change (DLC)</h3>
+      <p>
+        In the double lane change scenario, the KKF provides precise sideslip angle estimation at around 2–4 seconds, where the road friction coefficient changes rapidly, showing lower error compared to the KF and EKF. 
+        In the subsequent 4–6 second interval, where the road friction coefficient again changes from 0.25 to 0.55, the estimation error of the KKF is observed to be higher than that of the EKF. In terms of computational load, the linear KF has the lowest burden, the EKF the highest, and the KKF remains at an intermediate level.
+      </p>
+      <div class="columns is-centered mt-3 mb-5">
+  <div class="column is-half has-text-centered">
+    <img src="./static/images/kkf2.png" alt="DLC Estimation Results" style="width: 100%;">
+  </div>
+  <div class="column is-half has-text-centered">
+    <img src="./static/images/kkf5.png" alt="DLC Error Analysis" style="width: 100%;">
+  </div>
+</div>
+
+<div class="table-container mt-4 mb-6">
+  <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth has-text-centered">
+    <thead>
+      <tr class="is-selected">
+        <th class="has-text-centered">Method</th>
+        <th class="has-text-centered">Sideslip RMSE (deg)</th>
+        <th class="has-text-centered">Average Computation Time (ms)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>KF</td>
+        <td>0.8659(±0.6655) <br> </td>
+        <td><strong>0.013</td>
+        
+      </tr>
+      <tr>
+        <td>EKF</td>
+        <td>0.4318(±0.3527) <br> &darr;50.1% (vs. KF)</td>
+        <td>5.3934 <br> &uarr;41,388% (vs. KF)</td>
+        
+      </tr>
+      <tr>
+        <td>KKF(Ours)</td>
+        <td> <strong>0.3668(±0.2247) <br> &darr;57.6% (vs. KF) <br> &darr;15.1% (vs. EKF)</td>
+        <td>0.3258 <br> &uarr;2,406% (vs. KF) <br> <strong>&darr;94% (vs. EKF)</td>
+        
+      </tr>
+      
+    </tbody>
+  </table>
+</div>
+
+      <h3 class="title is-4 mt-6 has-text-centered">Simulation: Slalom</h3>
+      <p>
+        In the slalom scenario, the KKF exhibits low estimation error throughout all segments. 
+        This is attributed to the characteristics of the radial basis functions (RBF) used in the lifting process of the Koopman model, which show high compatibility with the driving dynamics of the slalom that feature periodic and smooth curvature variations.
+      </p>
+      <div class="columns is-centered mt-3 mb-5">
+  <div class="column is-half has-text-centered">
+    <img src="./static/images/kkf3.png" alt="Slalom Estimation Results" style="width: 100%;">
+  </div>
+  <div class="column is-half has-text-centered">
+    <img src="./static/images/kkf6.png" alt="Slalom Error Analysis" style="width: 100%;">
+  </div>
+</div>
+
+<div class="table-container mt-4 mb-6">
+  <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth has-text-centered">
+    <thead>
+      <tr class="is-selected">
+        <th class="has-text-centered">Method</th>
+        <th class="has-text-centered">Sideslip RMSE (deg)</th>
+        <th class="has-text-centered">Average Computation Time (ms)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>KF</td>
+        <td>0.8223(±0.5212) <br> </td>
+        <td><strong>0.0136</td>
+        
+      </tr>
+      <tr>
+        <td>EKF</td>
+        <td>0.3608(±0.2764) <br> &darr;56.1% (vs. KF)</td>
+        <td>5.2604 <br> &uarr;38,579% (vs. KF)</td>
+        
+      </tr>
+      <tr>
+        <td>KKF(Ours)</td>
+        <td> <strong>0.2368(±0.1166) <br> &darr;71.2% (vs. KF) <br> &darr;34.4% (vs. EKF)</td>
+        <td>0.33 <br> &uarr;2,326% (vs. KF) <br> <strong>&darr;93.7% (vs. EKF)</td>
+        
+      </tr>
+      
+    </tbody>
+  </table>
+</div>
+
+      <h3 class="title is-4 mt-6 has-text-centered">Simulation: Racetrack</h3>
+      <p>
+        The Racetrack simulation features a highly complex driving circuit with multi‑regime speed profiles and varying corner radii. This comprehensive test demonstrates the long‑term stability of the Koopman‑based predictor, confirming that it maintains bounded estimation error without noticeable growth over extended operation.
+      </p>
+      <div class="columns is-centered mt-3 mb-5">
+  <div class="column is-half has-text-centered">
+    <img src="./static/images/kkf4.png" alt="DLC Estimation Results" style="width: 100%;">
+  </div>
+  <div class="column is-half has-text-centered">
+    <img src="./static/images/kkf7.png" alt="DLC Error Analysis" style="width: 100%;">
+  </div>
+</div>
+
+<div class="table-container mt-4 mb-6">
+  <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth has-text-centered">
+    <thead>
+      <tr class="is-selected">
+        <th class="has-text-centered">Method</th>
+        <th class="has-text-centered">Sideslip RMSE (deg)</th>
+        <th class="has-text-centered">Average Computation Time (ms)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>KF</td>
+        <td>0.8684(±0.4751) <br> </td>
+        <td><strong>0.003</td>
+        
+      </tr>
+      <tr>
+        <td>EKF</td>
+        <td>0.6975(±0.4011) <br> &darr;19.7% (vs. KF)</td>
+        <td>0.076 <br> &uarr;2,433% (vs. KF)</td>
+        
+      </tr>
+      <tr>
+        <td>KKF(Ours)</td>
+        <td> <strong>0.5478(±0.2847) <br> &darr;36.92% (vs. KF) <br> &darr;21.5% (vs. EKF)</td>
+        <td>0.019 <br> &uarr;533.3% (vs. KF) <br> <strong>&darr;75% (vs. EKF)</td>
+        
+      </tr>
+      
+    </tbody>
+  </table>
+</div>
+
+    </div>
+  </div>
+</div>
     </div>
 </section>
 
